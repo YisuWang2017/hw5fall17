@@ -5,14 +5,14 @@ Given /^I am on the RottenPotatoes home page$/ do
  end
 
 
- When /^I have added a movie with title "(.*?)" and rating "(.*?)"$/ do |title, rating|
+When /^I have added a movie with title "(.*?)" and rating "(.*?)"$/ do |title, rating|
   visit new_movie_path
   fill_in 'Title', :with => title
   select rating, :from => 'Rating'
   click_button 'Save Changes'
- end
+end
 
- Then /^I should see a movie list entry with title "(.*?)" and rating "(.*?)"$/ do |title, rating| 
+Then /^I should see a movie list entry with title "(.*?)" and rating "(.*?)"$/ do |title, rating| 
    result=false
    all("tr").each do |tr|
      if tr.has_content?(title) && tr.has_content?(rating)
@@ -44,10 +44,9 @@ Given /^I am on the RottenPotatoes home page$/ do
 
 
 # Add a declarative step here for populating the DB with movies.
-
 Given /the following movies have been added to RottenPotatoes:/ do |movies_table|
-  pending  # Remove this statement when you finish implementing the test step
   movies_table.hashes.each do |movie|
+  Movie.create!(movie)
     # Each returned movie will be a hash representing one row of the movies_table
     # The keys will be the table headers and the values will be the row contents.
     # Entries can be directly to the database with ActiveRecord methods
@@ -56,18 +55,24 @@ Given /the following movies have been added to RottenPotatoes:/ do |movies_table
 end
 
 When /^I have opted to see movies rated: "(.*?)"$/ do |arg1|
-  # HINT: use String#split to split up the rating_list, then
-  # iterate over the ratings and check/uncheck the ratings
-  # using the appropriate Capybara command(s)
-  pending  #remove this statement after implementing the test step
+    arg1_list = arg1.split(/,\W/)
+    arg1_list.each do |rating|
+        check("ratings_#{rating}")
+    end
 end
 
 Then /^I should see only movies rated: "(.*?)"$/ do |arg1|
-  pending  #remove this statement after implementing the test step
+    arg1_list = arg1.split(/,\W/)
+    arg1_list.each do |rating|
+        movies = Movie.where("rating = ?", rating)
+        movies.each do |movie|
+            step %Q{I should see "#{movie.title}"}
+        end
+    end
 end
 
 Then /^I should see all of the movies$/ do
-  pending  #remove this statement after implementing the test step
+    page.all("table tbody tr").count.should == Movie.count
 end
 
 
