@@ -66,13 +66,28 @@ Then /^I should see only movies rated: "(.*?)"$/ do |arg1|
     arg1_list.each do |rating|
         movies = Movie.where("rating = ?", rating)
         movies.each do |movie|
-            step %Q{I should see "#{movie.title}"}
+            page.should have_content("#{movie.title}")
         end
     end
 end
 
 Then /^I should see all of the movies$/ do
     page.all("table tbody tr").count.should == Movie.count
+    Movie.all.each do |movie|
+		page.should have_content("#{movie.title}")
+	end
+end
+
+When /I follow "Movie Title"/ do
+     click_link('title_header')
+end
+
+When /I follow "Release Date"/ do
+     click_link('release_date_header')
+end
+
+Then /I should see "(.*)" before "(.*)"/ do |movie1, movie2|
+        (page.body.index(movie2) > page.body.index(movie1)).should be true
 end
 
 
